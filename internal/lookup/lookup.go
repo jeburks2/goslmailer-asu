@@ -4,6 +4,8 @@ import (
         "log"
         "os/exec"
         "strings"
+	"sync"
+	"time"
 )
 
 var cache = make(map[string]cachedResult)
