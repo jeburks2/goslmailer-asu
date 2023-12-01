@@ -66,22 +66,22 @@ func (j *JobContext) GenerateHints(qosMap qosMapQL) {
 	if j.IsJobFinished() {
 		// Check OUT_OF_MEMORY
 		if j.SlurmEnvironment.SLURM_JOB_STATE == "OUT_OF_MEMORY" {
-			j.Hints = append(j.Hints, "TIP: The job ran out of memory. Please re-submit with increased memory requirements")
+			j.Hints = append(j.Hints, "TIP: The job ran out of memory! You will need to re-submit with increased memory requirements using the --mem SBATCH flag)")
 			return
 		}
 
 		if j.SlurmEnvironment.SLURM_JOB_STATE == "TIMEOUT" {
-			j.Hints = append(j.Hints, "TIP: The job ran into a timeout. Please re-submit with increased walltime requirements and potentially to a different QOS)")
+			j.Hints = append(j.Hints, "TIP: The job ran into a timeout. Please re-submit with increased walltime requirements")
 			return
 		}
 
 		// Check memory consumption
 		if j.JobStats.ReqMem/2 > j.JobStats.MaxRSS {
-			j.Hints = append(j.Hints, "TIP: Please consider lowering the amount of requested memory in the future, your job has consumed less than half of the requested memory.")
+			j.Hints = append(j.Hints, "TIP: Please consider lowering the amount of requested memory in the future, this job has consumed less than half of the requested memory.")
 		}
 		// check CPU time (16 cores requested only 1 used)
 		if j.JobStats.CPUTime/2 > j.JobStats.TotalCPU {
-			j.Hints = append(j.Hints, "TIP: Please consider lowering the amount of requested CPU cores in the future, your job has consumed less than half of the requested CPU cores")
+			j.Hints = append(j.Hints, "TIP: Please consider lowering the amount of requested CPU cores in the future, this job has consumed less than half of the requested CPU cores")
 		}
 
 		// Check if runtime is half of the requested runtime
@@ -95,14 +95,14 @@ func (j *JobContext) GenerateHints(qosMap qosMapQL) {
 			//if qos, ok := qosMap[j.JobStats.Walltime]; ok { // original
 			if qos, ok := lqMap[j.JobStats.Walltime]; ok { // new
 				if qos != optimalQos {
-					j.Hints = append(j.Hints, fmt.Sprintf("TIP: Your job was submitted to %s QOS and finished within half of the requested walltime. Consider submitting it to the %s QOS instead", qos, optimalQos))
+					j.Hints = append(j.Hints, fmt.Sprintf("TIP: This job was submitted to %s QOS and finished within half of the requested walltime. Consider submitting it to the %s QOS instead", qos, optimalQos))
 				} else {
-					j.Hints = append(j.Hints, fmt.Sprintf("TIP: Your job was submitted to %s QOS and finished within half of the requested walltime. Consider reducing the walltime for backfilling purposes", qos))
+					j.Hints = append(j.Hints, fmt.Sprintf("TIP: This job was submitted to %s QOS and finished within half of the requested walltime. Consider reducing the walltime for backfilling purposes", qos))
 				}
 				j.Hints = append(j.Hints, fmt.Sprintf("TIP: No --time specified: Using default %s QOS limit. Specify --time to increase the chances that the scheduler will use this job for backfilling purposes", qos))
 			} else {
 
-				j.Hints = append(j.Hints, fmt.Sprintf("TIP: Your job was submitted with a walltime of %s and finished in less half of the time, consider reducing the walltime and submit it to %s QOS", j.JobStats.WalltimeStr, optimalQos))
+				j.Hints = append(j.Hints, fmt.Sprintf("TIP: This job was submitted with a walltime of %s and finished in less half of the time, consider reducing the walltime and submit it to %s QOS", j.JobStats.WalltimeStr, optimalQos))
 			}
 
 		}
